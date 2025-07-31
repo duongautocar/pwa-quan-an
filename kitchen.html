@@ -45,3 +45,96 @@
     update(ref(db, `orders/${orderId}`), { status: 'done' });
   };
 </script>
+=======
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nhà Bếp - Trung Việt</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1976d2" />
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; padding: 10px; background: #f0f2f5; margin: 0; }
+    h1 { color: #1976d2; text-align: center; }
+    .order { background: white; padding: 15px; margin: 10px 0; border-radius: 10px; }
+    .table { font-weight: bold; color: #d32f2f; }
+    .note { color: #555; font-style: italic; margin: 5px 0; }
+    .timestamp { color: #666; font-size: 0.9em; }
+    .status { padding: 4px 8px; border-radius: 4px; font-size: 0.9em; }
+    .pending { background: #fff3e0; color: #e65100; }
+    .done { background: #e8f5e8; color: #2e7d32; }
+    button { padding: 6px 12px; margin-top: 8px; background: #1976d2; color: white; border: none; cursor: pointer; }
+    .alert { position: fixed; top: 20px; right: 20px; background: #d32f2f; color: white; padding: 15px; border-radius: 8px; z-index: 1000; display: none; }
+  </style>
+</head>
+<body>
+  <h1>🍳 NHÀ BẾP - TRUNG VIỆT</h1>
+  <div id="orders">Đang tải đơn...</div>
+  <div id="alert" class="alert">🔔 Có đơn mới!</div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      authDomain: "pwa-trung-viet.firebaseapp.com",
+      databaseURL: "https://pwa-trung-viet-default-rtdb.firebaseio.com",
+      projectId: "pwa-trung-viet",
+      storageBucket: "pwa-trung-viet.firebasestorage.app",
+      messagingSenderId: "737617530800",
+      appId: "1:737617530800:web:01cb9ab4718e6f98819075"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase();
+    const ordersRef = ref(db, 'orders');
+
+    onValue(ordersRef, (snapshot) => {
+      const data = snapshot.val();
+      const orderList = document.getElementById('orders');
+      orderList.innerHTML = '';
+
+      if (!data) {
+        orderList.innerHTML = '<p>Chưa có đơn nào.</p>';
+        return;
+      }
+
+      Object.keys(data).forEach(key => {
+        const order = data[key];
+        const orderDiv = document.createElement('div');
+        orderDiv.className = 'order';
+        orderDiv.innerHTML = `
+          <div class="table">[ ${order.table} ]</div>
+          <strong>${order.dish}</strong> x${order.quantity}
+          ${order.note ? `<div class="note">📝 ${order.note}</div>` : ''}
+          <div class="timestamp">⏰ ${order.timestamp}</div>
+          <span class="status ${order.status === 'done' ? 'done' : 'pending'}">
+            ${order.status === 'done' ? '✅ Hoàn thành' : '🕒 Chưa làm'}
+          </span>
+          <br>
+          <button onclick="markDone('${key}')" ${order.status === 'done' ? 'disabled' : ''}>
+            ✅ Hoàn thành
+          </button>
+        `;
+        orderList.appendChild(orderDiv);
+      });
+
+      // Hiển thị thông báo đơn mới
+      const alert = document.getElementById('alert');
+      alert.style.display = 'block';
+      setTimeout(() => alert.style.display = 'none', 3000);
+      playSound();
+    });
+
+    window.markDone = (orderId) => {
+      update(ref(db, `orders/${orderId}`), { status: 'done' });
+    };
+
+    function playSound() {
+      const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-door-bell-double-ring-306.mp3');
+      audio.play().catch(() => {});
+    }
+  </script>
+</body>
+</html>
