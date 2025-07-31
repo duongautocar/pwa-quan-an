@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CallCheck Món - Trung Việt</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#d32f2f" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+      color: #333;
+    }
+    h1 { color: #d32f2f; text-align: center; }
+    .form-group { margin: 15px 0; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    select, input, button {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      background: #d32f2f;
+      color: white;
+      font-weight: bold;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>CallCheck Món - Trung Việt</h1>
+
+  <div class="form-group">
+    <label>Chọn bàn</label>
+    <select id="table">
+      <option>Bàn 1</option>
+      <option>Bàn 2</option>
+      <option>Bàn 3</option>
+      <option>Bàn 4</option>
+      <option>Bàn 5</option>
+      <option>Bàn 6</option>
+      <option>Bàn 7</option>
+      <option>Bàn 8</option>
+      <option>Bàn 9</option>
+      <option>Bàn 10</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Chọn món</label>
+    <select id="dish">
+      <option>Phở bò</option>
+      <option>Mì xào</option>
+      <option>Gỏi cuốn</option>
+      <option>Cơm tấm</option>
+      <option>Trà đá</option>
+      <option>Nước ngọt</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Số lượng</label>
+    <input type="number" id="quantity" value="1" min="1" />
+  </div>
+
+  <div class="form-group">
+    <label>Ghi chú</label>
+    <input type="text" id="note" placeholder="Ít cay, thêm trứng..." />
+  </div>
+
+  <button onclick="sendOrder()">Gửi vào bếp</button>
+  <p id="status" style="color: green; margin-top: 10px;"></p>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC5xLBM0zXoqzqO5xc_GZXx1I3k448sKhw",
+      authDomain: "pwa-trung-viet.firebaseapp.com",
+      databaseURL: "https://pwa-trung-viet-default-rtdb.firebaseio.com",
+      projectId: "pwa-trung-viet",
+      storageBucket: "pwa-trung-viet.firebasestorage.app",
+      messagingSenderId: "737617530800",
+      appId: "1:737617530800:web:01cb9ab4718e6f98819075"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase();
+
+    function sendOrder() {
+      const table = document.getElementById('table').value;
+      const dish = document.getElementById('dish').value;
+      const quantity = parseInt(document.getElementById('quantity').value);
+      const note = document.getElementById('note').value;
+      const time = Date.now();
+      const timestamp = new Date().toLocaleTimeString();
+
+      const order = {
+        table, dish, quantity, note, status: "pending", time, timestamp
+      };
+
+      push(ref(db, 'orders'), order)
+        .then(() => {
+          document.getElementById('status').textContent = `✅ Đã gửi: ${dish} x${quantity} cho ${table}`;
+          setTimeout(() => document.getElementById('status').textContent = "", 3000);
+          document.getElementById('note').value = "";
+        })
+        .catch(err => alert("Lỗi: " + err.message));
+    }
+  </script>
+</body>
+</html>
